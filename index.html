@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Budget Tracker</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            margin: 20px 0;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .income-row {
+            background-color: #d4edda;
+        }
+        .expense-row {
+            background-color: #f8d7da;
+        }
+
+        .stylish-btn {
+        font-size: 1.1rem;
+        border-radius: 30px;
+        padding: 10px 20px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .stylish-btn:hover {
+        background-color: #333;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    </style>
+</head>
+<body>
+    
+    <div class="container my-4">
+        <!-- Budget Goal Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                <h5>Set Monthly Budget Goal</h5>
+                <i class="fas fa-bullseye"></i>
+            </div>
+            <div class="card-body">
+                <form id="goal-form">
+                    <div class="form-group">
+                        <label for="budget-goal">Monthly Budget Goal ($)</label>
+                        <input type="number" class="form-control" id="budget-goal" placeholder="Set your budget goal">
+                    </div>
+                    <!-- Stylish Medium-Width Button -->
+                    <button type="submit" class="btn btn-warning btn-md btn-block stylish-btn shadow">Set Goal</button>
+                </form>
+                <div class="progress mt-4">
+                    <div class="progress-bar bg-danger" id="goal-progress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+                <p id="goal-message" class="mt-2 text-center"></p>
+            </div>
+        </div>
+    
+        <!-- Add Income/Expense Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5>Add Income/Expense</h5>
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="card-body">
+                <form id="budget-form">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="description">Description</label>
+                            <input type="text" class="form-control" id="description" placeholder="e.g., Salary, Rent, Groceries">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="amount">Amount</label>
+                            <input type="number" class="form-control" id="amount" placeholder="Enter amount">
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="category">Category</label>
+                            <select id="category" class="form-control">
+                                <option value="income">Income</option>
+                                <option value="food">Food</option>
+                                <option value="transportation">Transportation</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="bills">Bills</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Stylish Medium-Width Button -->
+                    <button type="submit" class="btn btn-success btn-md btn-block stylish-btn shadow">Add Entry</button>
+                </form>
+            </div>
+        </div>
+    
+        <!-- Budget Summary Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5>Budget Summary</h5>
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4>Total Income</h4>
+                        <p id="total-income" class="h3">$0.00</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Total Expenses</h4>
+                        <p id="total-expense" class="h3">$0.00</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Savings</h4>
+                        <p id="total-savings" class="h3">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Expense Entries Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5>Expense Entries</h5>
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entry-list"></tbody>
+                </table>
+            </div>
+        </div>
+    
+        <!-- Expense Breakdown Chart Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5>Expense Breakdown</h5>
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="expense-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.6.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript for handling the budget -->
+    <script>
+// Initialize chart data
+let chartData = {
+    labels: ['Food', 'Transportation', 'Entertainment', 'Bills'],
+    datasets: [{
+        label: 'Expenses',
+        data: [0, 0, 0, 0],
+        backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0']
+    }]
+};
+
+let totalIncome = 0;
+let totalExpenses = 0;
+let savings = 0;
+let budgetGoal = 0;
+let budgetEntries = [];
+
+// Setup chart
+let ctx = document.getElementById('expense-chart').getContext('2d');
+let expenseChart = new Chart(ctx, {
+    type: 'pie',
+    data: chartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+    }
+});
+
+// Update chart with new data
+function updateChart() {
+    expenseChart.update();
+}
+
+// Set Budget Goal
+document.getElementById('goal-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    budgetGoal = parseFloat(document.getElementById('budget-goal').value);
+    if (!isNaN(budgetGoal) && budgetGoal > 0) {
+        updateGoalProgress();
+    }
+});
+
+// Update Goal Progress
+function updateGoalProgress() {
+    const percentage = (totalExpenses / budgetGoal) * 100;
+    const progressBar = document.getElementById('goal-progress');
+    const goalMessage = document.getElementById('goal-message');
+
+    progressBar.style.width = `${Math.min(percentage, 100)}%`;
+    progressBar.innerText = `${Math.min(percentage, 100).toFixed(2)}%`;
+
+    if (percentage >= 100) {
+        goalMessage.innerHTML = `<strong class="text-danger">Warning: You've exceeded your budget goal!</strong>`;
+    } else {
+        goalMessage.innerHTML = `<strong>${(budgetGoal - totalExpenses).toFixed(2)} left to reach your goal!</strong>`;
+    }
+}
+
+// Add entry (income/expense)
+document.getElementById('budget-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const description = document.getElementById('description').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const category = document.getElementById('category').value;
+    const date = new Date().toLocaleDateString();
+
+    if (description && !isNaN(amount)) {
+        const entry = { description, amount, category, date };
+        budgetEntries.push(entry);
+
+        addEntryToTable(entry);
+        updateBudgetData(category, amount);
+        updateGoalProgress();
+        updateChart();
+    }
+});
+
+// Add entry to table
+function addEntryToTable(entry) {
+    const entryRow = document.createElement('tr');
+    entryRow.className = entry.category === 'income' ? 'income-row' : 'expense-row';
+
+    entryRow.innerHTML = `
+        <td>${entry.description}</td>
+        <td>${entry.amount.toFixed(2)}</td>
+        <td>${entry.category}</td>
+        <td>${entry.date}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteEntry('${entry.description}')">Delete</button></td>
+    `;
+
+    document.getElementById('entry-list').appendChild(entryRow);
+}
+
+// Delete entry
+function deleteEntry(description) {
+    budgetEntries = budgetEntries.filter(entry => entry.description !== description);
+    renderEntries();
+    recalculateTotals();
+}
+
+// Update total income, expenses, and savings
+function updateBudgetData(category, amount) {
+    if (category === 'income') {
+        totalIncome += amount;
+    } else {
+        totalExpenses += amount;
+
+        // Update chart data based on category
+        const categoryIndex = chartData.labels.indexOf(category);
+        if (categoryIndex >= 0) {
+            chartData.datasets[0].data[categoryIndex] += amount;
+        }
+    }
+
+    savings = totalIncome - totalExpenses;
+    document.getElementById('total-income').innerText = `$${totalIncome.toFixed(2)}`;
+    document.getElementById('total-expense').innerText = `$${totalExpenses.toFixed(2)}`;
+    document.getElementById('total-savings').innerText = `$${savings.toFixed(2)}`;
+}
+
+// Render all entries (after deletion or modification)
+function renderEntries() {
+    const entryList = document.getElementById('entry-list');
+    entryList.innerHTML = ''; // Clear table
+
+    budgetEntries.forEach(entry => {
+        addEntryToTable(entry);
+    });
+}
+
+// Recalculate total income, expenses, and savings after an entry is deleted
+function recalculateTotals() {
+    totalIncome = 0;
+    totalExpenses = 0;
+    chartData.datasets[0].data = [0, 0, 0, 0]; // Reset chart data
+
+    budgetEntries.forEach(entry => {
+        updateBudgetData(entry.category, entry.amount);
+    });
+
+    updateGoalProgress();
+    updateChart();
+}
+
+    </script>
+</body>
+</html>
